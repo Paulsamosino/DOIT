@@ -19,19 +19,28 @@ const reportsRoutes = require("./routes/reports");
 const app = express();
 
 // Middleware
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? ["http://your-frontend-domain.com"]
-        : [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://192.168.1.6:3000",
-          ],
-    credentials: true,
-  })
-);
+// Enable CORS with dynamic origin
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow all origins in development or if origin is not set (like direct API calls)
+    if (process.env.NODE_ENV !== 'production' || !origin) {
+      callback(null, true);
+    } else {
+      // In production, you might want to restrict this to your frontend domain
+      callback(null, true);
+      // For production with specific domains:
+      // const allowedOrigins = ['https://your-frontend-domain.com'];
+      // if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      //   callback(null, true);
+      // } else {
+      //   callback(new Error('Not allowed by CORS'));
+      // }
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -63,6 +72,11 @@ const connectDB = async () => {
 
 // Connect to database
 connectDB();
+
+// Root route
+app.get('/', (req, res) => {
+  res.redirect('/api');
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
