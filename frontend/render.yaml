@@ -1,0 +1,13 @@
+static_sites:
+  - type: static_site
+    name: doit-frontend
+    buildCommand: npm install && npm run build
+    publicPath: /build
+    envVars:
+      - key: REACT_APP_API_URL
+        required: true
+    routes:
+      - handle: /*
+        src: "/*"
+        dest: "/index.html"
+    plan: free

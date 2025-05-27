@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: doit-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        required: true
+      - key: JWT_SECRET
+        generateValue: true
+    plan: free
