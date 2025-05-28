@@ -20,37 +20,120 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string>("");
-  const [scanResult, setScanResult] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
-  const [selectedCamera, setSelectedCamera] = useState<string>("");
-  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>(
-    []
-  );
   const [codeReader] = useState(() => new BrowserMultiFormatReader());
-  const [stream, setStream] = useState<MediaStream | null>(null);
 
-  const handleScan = useCallback(
-    (result: string) => {
-      setScanResult(result);
-      onScanSuccess(result);
-      setIsScanning(false);
-      onClose();
-    },
-    [onScanSuccess, onClose]
-  );
+  // Get available cameras and select the best one
+  const initializeCamera = useCallback(async () => {
+    try {
+      // Clear previous errors
+      setError("");
+      console.log("Initializing camera...");
 
-  const handleError = useCallback(
-    (error: any) => {
-      console.error("Barcode scan error:", error);
-      const errorMessage = error?.message || "Failed to scan barcode";
-      setError(errorMessage);
-      if (onScanError) {
-        onScanError(errorMessage);
+      // List all available video devices
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(
+        (device) => device.kind === "videoinput"
+      );
+
+      console.log("Available cameras:", videoDevices);
+
+      if (videoDevices.length === 0) {
+        throw new Error("No cameras detected on this device");
       }
-    },
-    [onScanError]
-  );
 
+      // Prefer back camera for mobile devices if available
+      const backCamera = videoDevices.find(
+        (device) =>
+          device.label.toLowerCase().includes("back") ||
+          device.label.toLowerCase().includes("environment")
+      );
+
+      // Use back camera if found, otherwise use the first camera
+      const deviceId = backCamera
+        ? backCamera.deviceId
+        : videoDevices[0].deviceId;
+      return deviceId;
+    } catch (err: any) {
+      console.error("Error initializing camera:", err);
+      setError(`Camera initialization error: ${err.message}`);
+      if (onScanError) {
+        onScanError(err.message || "Failed to initialize camera");
+      }
+      return null;
+    }
+  }, [onScanError]);
+
+  // Start scanning
+  const startScanning = useCallback(async () => {
+    if (!videoRef.current || !isOpen) return;
+
+    try {
+      setIsScanning(true);
+      setError("");
+
+      console.log("Starting barcode scanner...");
+
+      // Get the best camera device ID
+      const deviceId = await initializeCamera();
+
+      if (!deviceId) {
+        throw new Error("Failed to get camera device");
+      }
+
+      console.log(`Using camera with ID: ${deviceId}`);
+
+      // Use the selected camera device
+      codeReader.decodeFromVideoDevice(
+        deviceId, // Use the selected camera instead of null
+        videoRef.current,
+        (result: Result | null, error?: any) => {
+          if (result) {
+            console.log("Barcode detected:", result.getText());
+            onScanSuccess(result.getText());
+            onClose();
+          }
+
+          // Only log NotFoundException errors, show others to user
+          if (error) {
+            if (!(error instanceof NotFoundException)) {
+              console.warn("Scan error:", error);
+              setError(error.message || "Unknown scanning error");
+              if (onScanError) {
+                onScanError(error.message || "Unknown scanning error");
+              }
+            }
+          }
+        }
+      );
+
+      console.log("Barcode scanner started successfully");
+    } catch (err: any) {
+      console.error("Failed to start camera:", err);
+      setError(`Camera error: ${err.message}. Please check permissions.`);
+      setIsScanning(false);
+      if (onScanError) {
+        onScanError(err.message || "Failed to start camera");
+      }
+    }
+  }, [
+    codeReader,
+    isOpen,
+    onClose,
+    onScanError,
+    onScanSuccess,
+    initializeCamera,
+  ]);
+
+  // Clean up when component unmounts or modal closes
+  const stopScanning = useCallback(() => {
+    console.log("Stopping barcode scanner...");
+    setIsScanning(false);
+    codeReader.reset();
+    console.log("Barcode scanner stopped");
+  }, [codeReader]);
+
+  // Handle manual input as fallback
   const handleManualInput = () => {
     const input = prompt("Enter barcode/serial number manually:");
     if (input && input.trim()) {
@@ -58,129 +141,33 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       onClose();
     }
   };
-  const clearError = () => {
-    setError("");
-  };
 
-  // Get available cameras
-  const getCameras = useCallback(async () => {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(
-        (device) => device.kind === "videoinput"
-      );
-      setAvailableCameras(videoDevices);
-
-      // Auto-select the best camera
-      if (videoDevices.length > 0) {
-        // Try to find back camera first (for mobile)
-        const backCamera = videoDevices.find(
-          (device) =>
-            device.label.toLowerCase().includes("back") ||
-            device.label.toLowerCase().includes("environment")
-        );
-
-        if (backCamera) {
-          setSelectedCamera(backCamera.deviceId);
-        } else {
-          // Use the first available camera (usually the default webcam)
-          setSelectedCamera(videoDevices[0].deviceId);
-        }
-      }
-    } catch (err) {
-      console.error("Error getting cameras:", err);
-      setError("Could not access cameras");
-    }
-  }, []);
-
-  // Start scanning
-  const startScanning = useCallback(async () => {
-    if (!videoRef.current) return;
-
-    try {
-      setIsScanning(true);
-      setError("");
-
-      // Get video stream with improved constraints for both mobile and desktop
-      const constraints: MediaStreamConstraints = {
-        video: selectedCamera
-          ? {
-              deviceId: { exact: selectedCamera },
-              width: { ideal: 1280, min: 640 },
-              height: { ideal: 720, min: 480 },
-            }
-          : {
-              facingMode: { ideal: "environment" }, // Fallback for mobile
-              width: { ideal: 1280, min: 640 },
-              height: { ideal: 720, min: 480 },
-            },
-      };
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia(
-        constraints
-      );
-      setStream(mediaStream);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
-
-        // Start ZXing barcode detection
-        codeReader.decodeFromVideoDevice(
-          selectedCamera || null,
-          videoRef.current,
-          (result: Result | null, error?: any) => {
-            if (result) {
-              handleScan(result.getText());
-            }
-            if (error && !(error instanceof NotFoundException)) {
-              console.warn("Scan error:", error);
-            }
-          }
-        );
-      }
-    } catch (err: any) {
-      console.error("Error starting scanner:", err);
-      setError(
-        "Failed to start camera. Please check permissions and ensure camera is available."
-      );
-      handleError(err);
-    }
-  }, [selectedCamera, codeReader, handleScan, handleError]);
-
-  // Stop scanning
-  const stopScanning = useCallback(() => {
-    setIsScanning(false);
-    codeReader.reset();
-
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  }, [codeReader, stream]);
-  // Effect to start/stop scanning based on modal state
+  // Start/stop scanning based on modal state
   useEffect(() => {
+    console.log("Scanner modal state changed:", isOpen ? "open" : "closed");
+
     if (isOpen) {
-      getCameras();
+      // Add a small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        startScanning();
+      }, 500);
+
+      return () => {
+        clearTimeout(timer);
+        stopScanning();
+      };
     } else {
       stopScanning();
     }
+  }, [isOpen, startScanning, stopScanning]);
 
-    return () => {
-      stopScanning();
-    };
-  }, [isOpen, getCameras, stopScanning]);
-
-  // Start scanning when camera is selected
+  // Effect to handle component unmount
   useEffect(() => {
-    if (isOpen && selectedCamera) {
-      startScanning();
-    }
-  }, [isOpen, selectedCamera, startScanning]);
+    return () => {
+      console.log("Barcode scanner component unmounting, cleaning up...");
+      codeReader.reset();
+    };
+  }, [codeReader]);
 
   if (!isOpen) return null;
 
@@ -208,42 +195,23 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             </svg>
           </button>
         </div>
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
             <p className="text-sm text-red-600">{error}</p>
             <button
-              onClick={clearError}
-              className="text-xs text-red-500 underline mt-1"
+              onClick={() => {
+                setError("");
+                startScanning();
+              }}
+              className="mt-2 text-xs text-red-600 underline"
             >
               Try again
             </button>
           </div>
         )}
-        {scanResult && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm text-green-600">Scanned: {scanResult}</p>
-          </div>
-        )}{" "}
-        {/* Camera selection */}
-        {availableCameras.length > 1 && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Camera:
-            </label>
-            <select
-              value={selectedCamera}
-              onChange={(e) => setSelectedCamera(e.target.value)}
-              className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              {availableCameras.map((camera, index) => (
-                <option key={camera.deviceId} value={camera.deviceId}>
-                  {camera.label || `Camera ${index + 1}`}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {/* QR/Barcode Scanner */}
+
+        {/* Video preview */}
         <div className="relative mb-4">
           <div className="w-full h-64 bg-black rounded-md overflow-hidden">
             <video
@@ -256,20 +224,35 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               playsInline
               muted
             />
-          </div>{" "}
-          {/* Scanning overlay */}
+          </div>
+
+          {/* Scanning overlay - redesigned for barcode scanning */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="border-2 border-red-500 w-3/4 h-20 bg-transparent rounded">
-              <div className="w-full h-0.5 bg-red-500 animate-pulse absolute top-1/2 transform -translate-y-1/2"></div>
+            <div className="border-2 border-blue-500 w-11/12 h-32 bg-transparent rounded-lg opacity-70">
+              {/* Corners for visual guidance */}
+              <div className="absolute -top-2 -left-2 w-5 h-5 border-t-4 border-l-4 border-blue-500 rounded-tl"></div>
+              <div className="absolute -top-2 -right-2 w-5 h-5 border-t-4 border-r-4 border-blue-500 rounded-tr"></div>
+              <div className="absolute -bottom-2 -left-2 w-5 h-5 border-b-4 border-l-4 border-blue-500 rounded-bl"></div>
+              <div className="absolute -bottom-2 -right-2 w-5 h-5 border-b-4 border-r-4 border-blue-500 rounded-br"></div>
+
+              {/* Center scanning line (thicker and more visible) */}
+              <div className="absolute top-1/2 left-0 right-0 transform -translate-y-1/2">
+                <div
+                  className="mx-auto h-1.5 bg-red-500 animate-pulse"
+                  style={{ width: "calc(100% - 8px)", maxWidth: "100%" }}
+                ></div>
+              </div>
             </div>
           </div>
-          {/* Scanning status */}
+
+          {/* Scanning indicator */}
           {isScanning && (
             <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
               Scanning...
             </div>
           )}
         </div>
+
         {/* Controls */}
         <div className="flex flex-col space-y-3">
           <button
@@ -281,11 +264,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
           <button
             onClick={onClose}
-            className="w-full bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
             Cancel
           </button>
         </div>
+
         <div className="mt-4 text-xs text-gray-500">
           <p>Position the barcode/QR code within the red scanning area.</p>
           <p>Ensure good lighting and hold the device steady.</p>

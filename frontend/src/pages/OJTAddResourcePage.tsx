@@ -4,29 +4,52 @@ import { ojtAPI } from "../services/api";
 import { InventoryItemRequest } from "../types";
 import BarcodeScanner from "../components/shared/BarcodeScanner";
 
+interface MapuaFormData {
+  roomType: string;
+  roomDescription: string;
+  campusArea: string;
+  computerType: string;
+  computerBrand: string;
+  computerModel: string;
+  serialNumber: string;
+  computerProcessor: string;
+  computerMemory: string;
+  storageDriveType: string;
+  storageDriveSize: string;
+  monitorBrandModel: string;
+  monitorSerialNumber: string;
+  upsBrandModel: string;
+  upsSerialNumber: string;
+  printerBrandModel: string;
+  printerSerialNumber: string;
+  remarks: string;
+}
+
 const OJTAddResourcePage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-
-  const [formData, setFormData] = useState<Partial<InventoryItemRequest>>({
-    building: "",
-    floor: "",
-    roomNameOrNumber: "",
-    computerNameOrId: "",
+  const [formData, setFormData] = useState<MapuaFormData>({
+    roomType: "",
+    roomDescription: "",
+    campusArea: "",
+    computerType: "",
+    computerBrand: "",
     computerModel: "",
     serialNumber: "",
-    operatingSystem: "",
-    osVersion: "",
-    processor: "",
-    memoryRAM: "",
-    storage: "",
-    status: "Available",
-    purchaseDate: "",
-    warrantyExpiration: "",
-    notes: "",
+    computerProcessor: "",
+    computerMemory: "",
+    storageDriveType: "",
+    storageDriveSize: "",
+    monitorBrandModel: "",
+    monitorSerialNumber: "",
+    upsBrandModel: "",
+    upsSerialNumber: "",
+    printerBrandModel: "",
+    printerSerialNumber: "",
+    remarks: "",
   });
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -42,24 +65,23 @@ const OJTAddResourcePage: React.FC = () => {
     setLoading(true);
     setError("");
     setSuccess("");
-
     try {
       // Validate required fields
       const requiredFields = [
-        "building",
-        "floor",
-        "roomNameOrNumber",
-        "computerNameOrId",
+        "roomType",
+        "roomDescription",
+        "campusArea",
+        "computerType",
+        "computerBrand",
         "computerModel",
         "serialNumber",
-        "operatingSystem",
-        "processor",
-        "memoryRAM",
-        "storage",
+        "computerProcessor",
+        "computerMemory",
+        "storageDriveType",
+        "storageDriveSize",
       ];
-
       const missingFields = requiredFields.filter(
-        (field) => !formData[field as keyof typeof formData]
+        (field) => !formData[field as keyof MapuaFormData]
       );
 
       if (missingFields.length > 0) {
@@ -68,24 +90,21 @@ const OJTAddResourcePage: React.FC = () => {
         );
       }
 
-      // Prepare data for API
+      // Prepare data for API - mapping to expected backend format
       const itemData: InventoryItemRequest = {
-        building: formData.building!,
-        floor: formData.floor!,
-        roomNameOrNumber: formData.roomNameOrNumber!,
-        computerNameOrId: formData.computerNameOrId!,
-        computerModel: formData.computerModel!,
-        serialNumber: formData.serialNumber!,
-        operatingSystem: formData.operatingSystem!,
-        osVersion: formData.osVersion || "",
-        processor: formData.processor!,
-        memoryRAM: formData.memoryRAM!,
-        storage: formData.storage!,
-        status: formData.status || "Available",
-        notes: formData.notes || "",
-        purchaseDate: formData.purchaseDate || undefined,
-        warrantyExpiration: formData.warrantyExpiration || undefined,
-        warrantyExpiry: formData.warrantyExpiration || undefined,
+        building: "Mapua Makati",
+        floor: formData.campusArea,
+        roomNameOrNumber: `${formData.roomType} - ${formData.roomDescription}`,
+        computerNameOrId: `${formData.computerBrand}-${formData.serialNumber}`,
+        computerModel: formData.computerModel,
+        serialNumber: formData.serialNumber,
+        operatingSystem:
+          formData.computerType === "Desktop" ? "Windows" : "Various",
+        processor: formData.computerProcessor,
+        memoryRAM: formData.computerMemory,
+        storage: `${formData.storageDriveSize} ${formData.storageDriveType}`,
+        status: "Available",
+        notes: `Room Type: ${formData.roomType}\nComputer Type: ${formData.computerType}\nBrand: ${formData.computerBrand}\nMonitor: ${formData.monitorBrandModel}\nMonitor SN: ${formData.monitorSerialNumber}\nUPS: ${formData.upsBrandModel}\nUPS SN: ${formData.upsSerialNumber}\nPrinter: ${formData.printerBrandModel}\nPrinter SN: ${formData.printerSerialNumber}\nRemarks: ${formData.remarks}`,
       };
 
       await ojtAPI.createInventoryItem(itemData);
@@ -95,21 +114,24 @@ const OJTAddResourcePage: React.FC = () => {
 
       // Reset form
       setFormData({
-        building: "",
-        floor: "",
-        roomNameOrNumber: "",
-        computerNameOrId: "",
+        roomType: "",
+        roomDescription: "",
+        campusArea: "",
+        computerType: "",
+        computerBrand: "",
         computerModel: "",
         serialNumber: "",
-        operatingSystem: "",
-        osVersion: "",
-        processor: "",
-        memoryRAM: "",
-        storage: "",
-        status: "Available",
-        purchaseDate: "",
-        warrantyExpiration: "",
-        notes: "",
+        computerProcessor: "",
+        computerMemory: "",
+        storageDriveType: "",
+        storageDriveSize: "",
+        monitorBrandModel: "",
+        monitorSerialNumber: "",
+        upsBrandModel: "",
+        upsSerialNumber: "",
+        printerBrandModel: "",
+        printerSerialNumber: "",
+        remarks: "",
       });
     } catch (err: any) {
       console.error("Error creating inventory item:", err);
@@ -172,10 +194,10 @@ const OJTAddResourcePage: React.FC = () => {
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
               />
             </svg>
-          </div>
+          </div>{" "}
           <div>
             <h1 className="text-3xl font-bold text-red-700">
-              Add New Resource
+              Mapua Makati Office and Lecture Room IT Resources
             </h1>
             <p className="text-gray-600 mt-1">
               Register new IT equipment in the inventory system
@@ -222,8 +244,9 @@ const OJTAddResourcePage: React.FC = () => {
       )}{" "}
       {/* Form */}
       <div className="card-modern p-8">
+        {" "}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Location Information */}
+          {/* Room Information */}
           <div className="bg-gradient-to-r from-red-50 to-red-50 p-6 rounded-xl border border-red-100">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
@@ -248,102 +271,155 @@ const OJTAddResourcePage: React.FC = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900">
-                Location Information
+                Room Information
               </h3>
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div>
                 <label
-                  htmlFor="building"
+                  htmlFor="roomType"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Building *
+                  Room Type *
                 </label>
                 <select
-                  id="building"
-                  name="building"
+                  id="roomType"
+                  name="roomType"
                   required
                   className="input-modern"
-                  value={formData.building}
+                  value={formData.roomType}
                   onChange={handleInputChange}
                 >
-                  <option value="">Select Building</option>
-                  <option value="Main Building">Main Building</option>
-                  <option value="Engineering Building">
-                    Engineering Building
-                  </option>
-                  <option value="IT Building">IT Building</option>
+                  <option value="">Select Room Type</option>
+                  <option value="Office">Office</option>
+                  <option value="ILMO Laboratory">ILMO Laboratory</option>
+                  <option value="Function Room">Function Room</option>
+                  <option value="Lecture Room">Lecture Room</option>
                 </select>
               </div>
 
               <div>
                 <label
-                  htmlFor="floor"
+                  htmlFor="roomDescription"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Floor *
+                  Room Description *
                 </label>
                 <input
                   type="text"
-                  id="floor"
-                  name="floor"
+                  id="roomDescription"
+                  name="roomDescription"
                   required
                   className="input-modern"
-                  placeholder="e.g., 1st Floor"
-                  value={formData.floor}
+                  placeholder="e.g., Room 101, IT Department"
+                  value={formData.roomDescription}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="roomNameOrNumber"
+                  htmlFor="campusArea"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Room Name/Number *
+                  Campus Area *
                 </label>
-                <input
-                  type="text"
-                  id="roomNameOrNumber"
-                  name="roomNameOrNumber"
+                <select
+                  id="campusArea"
+                  name="campusArea"
                   required
                   className="input-modern"
-                  placeholder="e.g., Room 101"
-                  value={formData.roomNameOrNumber}
+                  value={formData.campusArea}
                   onChange={handleInputChange}
-                />
+                >
+                  <option value="">Select Campus Area</option>
+                  <option value="Basement 1">Basement 1</option>
+                  <option value="Ground Floor">Ground Floor</option>
+                  <option value="2nd Floor">2nd Floor</option>
+                  <option value="3nd Floor">3nd Floor</option>
+                  <option value="4nd Floor">4nd Floor</option>
+                  <option value="5nd Floor">5nd Floor</option>
+                  <option value="6nd Floor">6nd Floor</option>
+                  <option value="7nd Floor">7nd Floor</option>
+                </select>
               </div>
             </div>
           </div>
 
           {/* Computer Information */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Computer Information
-            </h3>
+          <div className="bg-gradient-to-r from-blue-50 to-blue-50 p-6 rounded-xl border border-blue-100">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Computer Information
+              </h3>
+            </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <label
-                  htmlFor="computerNameOrId"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="computerType"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Computer Name/ID *
+                  Computer Type *
                 </label>
-                <input
-                  type="text"
-                  id="computerNameOrId"
-                  name="computerNameOrId"
+                <select
+                  id="computerType"
+                  name="computerType"
                   required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., MAPUA-PC-001"
-                  value={formData.computerNameOrId}
+                  className="input-modern"
+                  value={formData.computerType}
                   onChange={handleInputChange}
-                />
+                >
+                  <option value="">Select Computer Type</option>
+                  <option value="Desktop">Desktop</option>
+                  <option value="Laptop">Laptop</option>
+                </select>
               </div>
+
+              <div>
+                <label
+                  htmlFor="computerBrand"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  Computer Brand *
+                </label>
+                <select
+                  id="computerBrand"
+                  name="computerBrand"
+                  required
+                  className="input-modern"
+                  value={formData.computerBrand}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Computer Brand</option>
+                  <option value="DELL">DELL</option>
+                  <option value="ACER">ACER</option>
+                  <option value="LENOVO">LENOVO</option>
+                  <option value="APPLE">APPLE</option>
+                  <option value="HP">HP</option>
+                  <option value="ASUS">ASUS</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+
               <div>
                 <label
                   htmlFor="computerModel"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Computer Model *
                 </label>
@@ -352,27 +428,28 @@ const OJTAddResourcePage: React.FC = () => {
                   id="computerModel"
                   name="computerModel"
                   required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., Dell OptiPlex 7080"
+                  className="input-modern"
+                  placeholder="e.g., OptiPlex 7080"
                   value={formData.computerModel}
                   onChange={handleInputChange}
                 />
-              </div>{" "}
+              </div>
+
               <div>
                 <label
                   htmlFor="serialNumber"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Serial Number *
                 </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
+                <div className="flex rounded-md shadow-sm">
                   <input
                     type="text"
                     id="serialNumber"
                     name="serialNumber"
                     required
-                    className="flex-1 block w-full rounded-none rounded-l-md border-gray-300 focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                    value={formData.serialNumber || ""}
+                    className="flex-1 input-modern rounded-r-none"
+                    value={formData.serialNumber}
                     onChange={handleInputChange}
                     placeholder="Device serial number"
                   />
@@ -398,189 +475,260 @@ const OJTAddResourcePage: React.FC = () => {
                   </button>
                 </div>
               </div>
+
               <div>
                 <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="computerProcessor"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Status *
+                  Computer Processor *
+                </label>
+                <input
+                  type="text"
+                  id="computerProcessor"
+                  name="computerProcessor"
+                  required
+                  className="input-modern"
+                  placeholder="e.g., Intel Core i5-10500"
+                  value={formData.computerProcessor}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="computerMemory"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  Computer Memory *
+                </label>
+                <input
+                  type="text"
+                  id="computerMemory"
+                  name="computerMemory"
+                  required
+                  className="input-modern"
+                  placeholder="e.g., 16GB DDR4"
+                  value={formData.computerMemory}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Storage Information */}
+          <div className="bg-gradient-to-r from-green-50 to-green-50 p-6 rounded-xl border border-green-100">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Storage Information
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="storageDriveType"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  Storage Drive Type *
                 </label>
                 <select
-                  id="status"
-                  name="status"
+                  id="storageDriveType"
+                  name="storageDriveType"
                   required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={formData.status}
+                  className="input-modern"
+                  value={formData.storageDriveType}
                   onChange={handleInputChange}
                 >
-                  <option value="Available">Available</option>
-                  <option value="In Use">In Use</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Retired">Retired</option>
+                  <option value="">Select Storage Type</option>
+                  <option value="HDD">HDD</option>
+                  <option value="SSD">SSD</option>
                 </select>
               </div>
+
+              <div>
+                <label
+                  htmlFor="storageDriveSize"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  Storage Drive Size *
+                </label>
+                <input
+                  type="text"
+                  id="storageDriveSize"
+                  name="storageDriveSize"
+                  required
+                  className="input-modern"
+                  placeholder="e.g., 512GB, 1TB"
+                  value={formData.storageDriveSize}
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
           </div>
 
-          {/* System Specifications */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              System Specifications
-            </h3>
+          {/* Peripherals Information */}
+          <div className="bg-gradient-to-r from-purple-50 to-purple-50 p-6 rounded-xl border border-purple-100">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Peripherals Information
+              </h3>
+            </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <label
-                  htmlFor="operatingSystem"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="monitorBrandModel"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Operating System *
+                  Monitor Brand/Model
                 </label>
                 <input
                   type="text"
-                  id="operatingSystem"
-                  name="operatingSystem"
-                  required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., Windows 11 Pro"
-                  value={formData.operatingSystem}
+                  id="monitorBrandModel"
+                  name="monitorBrandModel"
+                  className="input-modern"
+                  placeholder="e.g., Dell U2722DE"
+                  value={formData.monitorBrandModel}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="osVersion"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="monitorSerialNumber"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  OS Version
+                  Monitor Serial Number
                 </label>
                 <input
                   type="text"
-                  id="osVersion"
-                  name="osVersion"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., 22H2"
-                  value={formData.osVersion}
+                  id="monitorSerialNumber"
+                  name="monitorSerialNumber"
+                  className="input-modern"
+                  placeholder="Monitor serial number"
+                  value={formData.monitorSerialNumber}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="processor"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="upsBrandModel"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Processor *
+                  UPS Brand/Model
                 </label>
                 <input
                   type="text"
-                  id="processor"
-                  name="processor"
-                  required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., Intel Core i5-10500"
-                  value={formData.processor}
+                  id="upsBrandModel"
+                  name="upsBrandModel"
+                  className="input-modern"
+                  placeholder="e.g., APC Back-UPS Pro 1500"
+                  value={formData.upsBrandModel}
                   onChange={handleInputChange}
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="memoryRAM"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="upsSerialNumber"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Memory (RAM) *
+                  UPS Serial Number
                 </label>
                 <input
                   type="text"
-                  id="memoryRAM"
-                  name="memoryRAM"
-                  required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., 16GB DDR4"
-                  value={formData.memoryRAM}
+                  id="upsSerialNumber"
+                  name="upsSerialNumber"
+                  className="input-modern"
+                  placeholder="UPS serial number"
+                  value={formData.upsSerialNumber}
                   onChange={handleInputChange}
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label
-                  htmlFor="storage"
-                  className="block text-sm font-medium text-gray-700"
+                  htmlFor="printerBrandModel"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Storage *
+                  Printer Brand/Model
                 </label>
                 <input
                   type="text"
-                  id="storage"
-                  name="storage"
-                  required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., 512GB SSD"
-                  value={formData.storage}
+                  id="printerBrandModel"
+                  name="printerBrandModel"
+                  className="input-modern"
+                  placeholder="e.g., HP LaserJet Pro M404n"
+                  value={formData.printerBrandModel}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="printerSerialNumber"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Printer Serial Number
+                </label>
+                <input
+                  type="text"
+                  id="printerSerialNumber"
+                  name="printerSerialNumber"
+                  className="input-modern"
+                  placeholder="Printer serial number"
+                  value={formData.printerSerialNumber}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
           </div>
 
-          {/* Purchase & Warranty Information */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Purchase & Warranty Information
-            </h3>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="purchaseDate"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Purchase Date
-                </label>
-                <input
-                  type="date"
-                  id="purchaseDate"
-                  name="purchaseDate"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={formData.purchaseDate}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="warrantyExpiration"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Warranty Expiration
-                </label>
-                <input
-                  type="date"
-                  id="warrantyExpiration"
-                  name="warrantyExpiration"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={formData.warrantyExpiration}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Notes */}
+          {/* Remarks */}
           <div>
             <label
-              htmlFor="notes"
-              className="block text-sm font-medium text-gray-700"
+              htmlFor="remarks"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Notes
+              Remarks
             </label>
             <textarea
-              id="notes"
-              name="notes"
+              id="remarks"
+              name="remarks"
               rows={4}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="input-modern"
               placeholder="Additional information about this resource..."
-              value={formData.notes}
+              value={formData.remarks}
               onChange={handleInputChange}
             />
           </div>
@@ -599,22 +747,24 @@ const OJTAddResourcePage: React.FC = () => {
               disabled={loading}
               className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Adding..." : "Add Resource"}{" "}
-            </button>{" "}
+              {loading ? "Adding..." : "Add Resource"}
+            </button>
           </div>
         </form>
       </div>
-
       {/* Barcode Scanner Modal */}
       <BarcodeScanner
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScanSuccess={(result: string) => {
-          setFormData((prev) => ({ ...prev, serialNumber: result }));
+          setFormData((prev: MapuaFormData) => ({
+            ...prev,
+            serialNumber: result,
+          }));
           setIsScannerOpen(false);
         }}
         onScanError={(error: string) => {
-          console.error('Scan error:', error);
+          console.error("Scan error:", error);
           setIsScannerOpen(false);
         }}
       />
