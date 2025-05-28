@@ -30,10 +30,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       setError("");
       console.log("Initializing camera...");
 
-      // List all available video devices
+      // First, request camera permissions to get device IDs
+      console.log("Requesting camera permissions...");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+
+      // Stop the temporary stream immediately
+      stream.getTracks().forEach((track) => track.stop());
+      console.log("Camera permissions granted");
+
+      // Now enumerate devices with proper deviceIds
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(
-        (device) => device.kind === "videoinput"
+        (device) => device.kind === "videoinput" && device.deviceId
       );
 
       console.log("Available cameras:", videoDevices);
@@ -46,13 +56,21 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       const backCamera = videoDevices.find(
         (device) =>
           device.label.toLowerCase().includes("back") ||
-          device.label.toLowerCase().includes("environment")
+          device.label.toLowerCase().includes("environment") ||
+          device.label.toLowerCase().includes("rear")
       );
 
       // Use back camera if found, otherwise use the first camera
       const deviceId = backCamera
         ? backCamera.deviceId
         : videoDevices[0].deviceId;
+
+      console.log("Selected camera device ID:", deviceId);
+
+      if (!deviceId) {
+        throw new Error("No valid camera device ID found");
+      }
+
       return deviceId;
     } catch (err: any) {
       console.error("Error initializing camera:", err);
@@ -78,34 +96,58 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       const deviceId = await initializeCamera();
 
       if (!deviceId) {
-        throw new Error("Failed to get camera device");
-      }
+        // Fallback: try using undefined (which uses default camera)
+        console.log("No specific device ID found, trying default camera...");
 
-      console.log(`Using camera with ID: ${deviceId}`);
+        codeReader.decodeFromVideoDevice(
+          null, // Use default camera
+          videoRef.current,
+          (result: Result | null, error?: any) => {
+            if (result) {
+              console.log("Barcode detected:", result.getText());
+              onScanSuccess(result.getText());
+              onClose();
+            }
 
-      // Use the selected camera device
-      codeReader.decodeFromVideoDevice(
-        deviceId, // Use the selected camera instead of null
-        videoRef.current,
-        (result: Result | null, error?: any) => {
-          if (result) {
-            console.log("Barcode detected:", result.getText());
-            onScanSuccess(result.getText());
-            onClose();
-          }
-
-          // Only log NotFoundException errors, show others to user
-          if (error) {
-            if (!(error instanceof NotFoundException)) {
-              console.warn("Scan error:", error);
-              setError(error.message || "Unknown scanning error");
-              if (onScanError) {
-                onScanError(error.message || "Unknown scanning error");
+            // Only log NotFoundException errors, show others to user
+            if (error) {
+              if (!(error instanceof NotFoundException)) {
+                console.warn("Scan error:", error);
+                setError(error.message || "Unknown scanning error");
+                if (onScanError) {
+                  onScanError(error.message || "Unknown scanning error");
+                }
               }
             }
           }
-        }
-      );
+        );
+      } else {
+        console.log(`Using camera with ID: ${deviceId}`);
+
+        // Use the selected camera device
+        codeReader.decodeFromVideoDevice(
+          deviceId,
+          videoRef.current,
+          (result: Result | null, error?: any) => {
+            if (result) {
+              console.log("Barcode detected:", result.getText());
+              onScanSuccess(result.getText());
+              onClose();
+            }
+
+            // Only log NotFoundException errors, show others to user
+            if (error) {
+              if (!(error instanceof NotFoundException)) {
+                console.warn("Scan error:", error);
+                setError(error.message || "Unknown scanning error");
+                if (onScanError) {
+                  onScanError(error.message || "Unknown scanning error");
+                }
+              }
+            }
+          }
+        );
+      }
 
       console.log("Barcode scanner started successfully");
     } catch (err: any) {
