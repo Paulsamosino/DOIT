@@ -303,15 +303,11 @@ export const reportsAPI = {
     // Summary section
     doc.setFontSize(16);
     doc.text("Summary", 20, 55);
-
     const summaryData = [
       ["Total Items", data.totalItems.toString()],
       ["Available Items", (data.itemsByStatus.Available || 0).toString()],
       ["In Use Items", (data.itemsByStatus["In Use"] || 0).toString()],
-      [
-        "Under Maintenance",
-        (data.itemsByStatus["Under Maintenance"] || 0).toString(),
-      ],
+      ["Maintenance", (data.itemsByStatus["Maintenance"] || 0).toString()],
       ["Expiring Warranties", data.expiringWarranties.toString()],
     ];
 

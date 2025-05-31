@@ -31,6 +31,9 @@ const AddResourcePage: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [monitorScannerOpen, setMonitorScannerOpen] = useState(false);
+  const [upsScannerOpen, setUpsScannerOpen] = useState(false);
+  const [printerScannerOpen, setPrinterScannerOpen] = useState(false);
 
   const [formData, setFormData] = useState<MapuaFormData>({
     roomType: "",
@@ -566,22 +569,42 @@ const AddResourcePage: React.FC = () => {
                   value={formData.monitorBrandModel}
                   onChange={handleInputChange}
                 />
-              </div>
-
+              </div>{" "}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Monitor Serial Number
                 </label>
-                <input
-                  type="text"
-                  name="monitorSerialNumber"
-                  className="input-modern"
-                  placeholder="Monitor serial number"
-                  value={formData.monitorSerialNumber}
-                  onChange={handleInputChange}
-                />
+                <div className="flex rounded-md shadow-sm">
+                  <input
+                    type="text"
+                    name="monitorSerialNumber"
+                    className="flex-1 input-modern rounded-r-none"
+                    placeholder="Monitor serial number"
+                    value={formData.monitorSerialNumber}
+                    onChange={handleInputChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMonitorScannerOpen(true)}
+                    className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    title="Scan Barcode/QR Code"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m0 0v5m0 0h5M4 20h5m0 0v-5m0 0h5"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   UPS Brand/Model
@@ -594,22 +617,42 @@ const AddResourcePage: React.FC = () => {
                   value={formData.upsBrandModel}
                   onChange={handleInputChange}
                 />
-              </div>
-
+              </div>{" "}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   UPS Serial Number
                 </label>
-                <input
-                  type="text"
-                  name="upsSerialNumber"
-                  className="input-modern"
-                  placeholder="UPS serial number"
-                  value={formData.upsSerialNumber}
-                  onChange={handleInputChange}
-                />
+                <div className="flex rounded-md shadow-sm">
+                  <input
+                    type="text"
+                    name="upsSerialNumber"
+                    className="flex-1 input-modern rounded-r-none"
+                    placeholder="UPS serial number"
+                    value={formData.upsSerialNumber}
+                    onChange={handleInputChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setUpsScannerOpen(true)}
+                    className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    title="Scan Barcode/QR Code"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m0 0v5m0 0h5M4 20h5m0 0v-5m0 0h5"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Printer Brand/Model
@@ -622,20 +665,41 @@ const AddResourcePage: React.FC = () => {
                   value={formData.printerBrandModel}
                   onChange={handleInputChange}
                 />
-              </div>
-
+              </div>{" "}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Printer Serial Number
                 </label>
-                <input
-                  type="text"
-                  name="printerSerialNumber"
-                  className="input-modern"
-                  placeholder="Printer serial number"
-                  value={formData.printerSerialNumber}
-                  onChange={handleInputChange}
-                />
+                <div className="flex rounded-md shadow-sm">
+                  <input
+                    type="text"
+                    name="printerSerialNumber"
+                    className="flex-1 input-modern rounded-r-none"
+                    placeholder="Printer serial number"
+                    value={formData.printerSerialNumber}
+                    onChange={handleInputChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPrinterScannerOpen(true)}
+                    className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    title="Scan Barcode/QR Code"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m0 0v5m0 0h5M4 20h5m0 0v-5m0 0h5"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -713,6 +777,54 @@ const AddResourcePage: React.FC = () => {
         onScanError={(error: string) => {
           console.error("Scan error:", error);
           setIsScannerOpen(false);
+        }}
+      />
+      {/* Monitor Barcode Scanner Modal */}
+      <BarcodeScanner
+        isOpen={monitorScannerOpen}
+        onClose={() => setMonitorScannerOpen(false)}
+        onScanSuccess={(result: string) => {
+          setFormData((prev: MapuaFormData) => ({
+            ...prev,
+            monitorSerialNumber: result,
+          }));
+          setMonitorScannerOpen(false);
+        }}
+        onScanError={(error: string) => {
+          console.error("Monitor scan error:", error);
+          setMonitorScannerOpen(false);
+        }}
+      />
+      {/* UPS Barcode Scanner Modal */}
+      <BarcodeScanner
+        isOpen={upsScannerOpen}
+        onClose={() => setUpsScannerOpen(false)}
+        onScanSuccess={(result: string) => {
+          setFormData((prev: MapuaFormData) => ({
+            ...prev,
+            upsSerialNumber: result,
+          }));
+          setUpsScannerOpen(false);
+        }}
+        onScanError={(error: string) => {
+          console.error("UPS scan error:", error);
+          setUpsScannerOpen(false);
+        }}
+      />
+      {/* Printer Barcode Scanner Modal */}
+      <BarcodeScanner
+        isOpen={printerScannerOpen}
+        onClose={() => setPrinterScannerOpen(false)}
+        onScanSuccess={(result: string) => {
+          setFormData((prev: MapuaFormData) => ({
+            ...prev,
+            printerSerialNumber: result,
+          }));
+          setPrinterScannerOpen(false);
+        }}
+        onScanError={(error: string) => {
+          console.error("Printer scan error:", error);
+          setPrinterScannerOpen(false);
         }}
       />
     </div>
