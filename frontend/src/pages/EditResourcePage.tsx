@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { inventoryAPI } from "../services/api";
 import { InventoryItemRequest } from "../types";
 import BarcodeScanner from "../components/shared/BarcodeScanner";
+import { getStatusBadgeClass } from "../utils/helpers";
 
 interface MapuaFormData {
   roomType: string;
@@ -23,6 +24,7 @@ interface MapuaFormData {
   printerBrandModel: string;
   printerSerialNumber: string;
   remarks: string;
+  status: string;
 }
 
 const EditResourcePage: React.FC = () => {
@@ -54,6 +56,7 @@ const EditResourcePage: React.FC = () => {
     printerBrandModel: "",
     printerSerialNumber: "",
     remarks: "",
+    status: "",
   });
 
   useEffect(() => {
@@ -104,6 +107,7 @@ const EditResourcePage: React.FC = () => {
           printerBrandModel: printerMatch ? printerMatch[1] : "",
           printerSerialNumber: printerSNMatch ? printerSNMatch[1] : "",
           remarks: remarksMatch ? remarksMatch[1] : "",
+          status: item.status || "",
         });
       } catch (err: any) {
         setError(
@@ -160,6 +164,7 @@ const EditResourcePage: React.FC = () => {
         storage: `${formData.storageDriveSize} ${formData.storageDriveType}`,
         roomNameOrNumber: `${formData.roomType} - ${formData.roomDescription}`,
         floor: formData.campusArea,
+        status: formData.status,
         notes,
       };
 
@@ -333,44 +338,63 @@ const EditResourcePage: React.FC = () => {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Room Type
+                  Room Type *
                 </label>
                 <input
                   type="text"
                   name="roomType"
                   value={formData.roomType}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                  className="input-modern"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Room Description
+                  Room Description *
                 </label>
                 <input
                   type="text"
                   name="roomDescription"
                   value={formData.roomDescription}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                  className="input-modern"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Campus Area
+                  Campus Area *
                 </label>
                 <input
                   type="text"
                   name="campusArea"
                   value={formData.campusArea}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                  className="input-modern"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status *
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="input-modern"
+                  required
+                >
+                  <option value="Available">Available</option>
+                  <option value="In Use">In Use</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Expiring Soon">Expiring Soon</option>
+                  <option value="Retired">Retired</option>
+                </select>
               </div>
             </div>
           </div>

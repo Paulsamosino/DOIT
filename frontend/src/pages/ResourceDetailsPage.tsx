@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { inventoryAPI } from "../services/api";
+import { getStatusBadgeClass } from "../utils/helpers";
 
 interface MapuaFormData {
   roomType: string;
@@ -21,6 +22,7 @@ interface MapuaFormData {
   printerBrandModel: string;
   printerSerialNumber: string;
   remarks: string;
+  status: string;
 }
 
 const ResourceDetailsPage: React.FC = () => {
@@ -48,6 +50,7 @@ const ResourceDetailsPage: React.FC = () => {
     printerBrandModel: "",
     printerSerialNumber: "",
     remarks: "",
+    status: "",
   });
 
   useEffect(() => {
@@ -98,6 +101,7 @@ const ResourceDetailsPage: React.FC = () => {
           printerBrandModel: printerMatch ? printerMatch[1] : "",
           printerSerialNumber: printerSNMatch ? printerSNMatch[1] : "",
           remarks: remarksMatch ? remarksMatch[1] : "",
+          status: item.status || "",
         });
       } catch (err: any) {
         setError(
@@ -242,6 +246,15 @@ const ResourceDetailsPage: React.FC = () => {
             <p className="text-gray-600">
               Detailed information about the IT resource
             </p>
+            <div className="mt-4">
+              <span
+                className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadgeClass(
+                  formData.status
+                )}`}
+              >
+                {formData.status}
+              </span>
+            </div>
           </div>
 
           {/* Room Information */}

@@ -23,6 +23,7 @@ interface MapuaFormData {
   printerBrandModel: string;
   printerSerialNumber: string;
   remarks: string;
+  status: string;
 }
 
 const AddResourcePage: React.FC = () => {
@@ -54,6 +55,7 @@ const AddResourcePage: React.FC = () => {
     printerBrandModel: "",
     printerSerialNumber: "",
     remarks: "",
+    status: "Available",
   });
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -107,7 +109,7 @@ const AddResourcePage: React.FC = () => {
         processor: formData.computerProcessor,
         memoryRAM: formData.computerMemory,
         storage: `${formData.storageDriveSize} ${formData.storageDriveType}`,
-        status: "Available",
+        status: formData.status,
         notes: `Room Type: ${formData.roomType}\nComputer Type: ${formData.computerType}\nBrand: ${formData.computerBrand}\nMonitor: ${formData.monitorBrandModel}\nMonitor SN: ${formData.monitorSerialNumber}\nUPS: ${formData.upsBrandModel}\nUPS SN: ${formData.upsSerialNumber}\nPrinter: ${formData.printerBrandModel}\nPrinter SN: ${formData.printerSerialNumber}\nRemarks: ${formData.remarks}`,
       };
 
@@ -136,6 +138,7 @@ const AddResourcePage: React.FC = () => {
         printerBrandModel: "",
         printerSerialNumber: "",
         remarks: "",
+        status: "Available",
       });
     } catch (err: any) {
       console.error("Error creating inventory item:", err);
@@ -276,19 +279,14 @@ const AddResourcePage: React.FC = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Room Type *
                 </label>
-                <select
+                <input
+                  type="text"
                   name="roomType"
-                  required
-                  className="input-modern"
                   value={formData.roomType}
                   onChange={handleInputChange}
-                >
-                  <option value="">Select Room Type</option>
-                  <option value="Office">Office</option>
-                  <option value="ILMO Laboratory">ILMO Laboratory</option>
-                  <option value="Function Room">Function Room</option>
-                  <option value="Lecture Room">Lecture Room</option>
-                </select>
+                  className="input-modern"
+                  required
+                />
               </div>
 
               <div>
@@ -298,11 +296,10 @@ const AddResourcePage: React.FC = () => {
                 <input
                   type="text"
                   name="roomDescription"
-                  required
-                  className="input-modern"
-                  placeholder="e.g., Room 201, IT Department"
                   value={formData.roomDescription}
                   onChange={handleInputChange}
+                  className="input-modern"
+                  required
                 />
               </div>
 
@@ -310,22 +307,32 @@ const AddResourcePage: React.FC = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Campus Area *
                 </label>
-                <select
+                <input
+                  type="text"
                   name="campusArea"
-                  required
-                  className="input-modern"
                   value={formData.campusArea}
                   onChange={handleInputChange}
+                  className="input-modern"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status *
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="input-modern"
+                  required
                 >
-                  <option value="">Select Campus Area</option>
-                  <option value="Basement 1">Basement 1</option>
-                  <option value="Ground Floor">Ground Floor</option>
-                  <option value="2nd Floor">2nd Floor</option>
-                  <option value="3rd Floor">3rd Floor</option>
-                  <option value="4th Floor">4th Floor</option>
-                  <option value="5th Floor">5th Floor</option>
-                  <option value="6th Floor">6th Floor</option>
-                  <option value="7th Floor">7th Floor</option>
+                  <option value="Available">Available</option>
+                  <option value="In Use">In Use</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Expiring Soon">Expiring Soon</option>
+                  <option value="Retired">Retired</option>
                 </select>
               </div>
             </div>
